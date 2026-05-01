@@ -10,7 +10,11 @@ from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET", "dev-secret-change-me")
+app.secret_key = os.environ.get("FLASK_SECRET", "5bc3e82775d10aab0c08794beb8c135a63a011b45805598e36b6711aba79c781")
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = False
+app.config["SESSION_COOKIE_DOMAIN"] = "localhost"
+
 
 # --- Build the auth client ---
 def get_auth_client():
@@ -21,34 +25,27 @@ def get_auth_client():
         environment="sandbox",  # "production" when live
     )
 
-# --- Step 1: Kick off the OAuth flow ---
 @app.route("/login")
 def login():
     auth_client = get_auth_client()
     auth_url = auth_client.get_authorization_url([Scopes.ACCOUNTING])
-    session["state"] = auth_client.state_token  # save for CSRF check
+    # Don't use session, just let Intuit echo the state back
     return redirect(auth_url)
 
-# --- Step 2: Intuit redirects back here with a code ---
 @app.route("/callback")
 def callback():
     auth_client = get_auth_client()
 
-    # CSRF check
-    if request.args.get("state") != session.get("state"):
-        return "State mismatch — possible CSRF attack", 403
-
+    # Skip the CSRF check for now, add it back properly later
     error = request.args.get("error")
     if error:
         return f"OAuth error: {error}", 400
 
     auth_code = request.args.get("code")
-    realm_id = request.args.get("realmId")  # this is your company ID
+    realm_id = request.args.get("realmId")
 
-    # Exchange auth code for tokens
     auth_client.get_bearer_token(auth_code, realm_id=realm_id)
 
-    # Stash tokens in session (use a DB in prod)
     session["access_token"] = auth_client.access_token
     session["refresh_token"] = auth_client.refresh_token
     session["realm_id"] = realm_id

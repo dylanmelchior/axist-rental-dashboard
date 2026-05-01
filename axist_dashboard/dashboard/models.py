@@ -3,10 +3,10 @@ from django.db import models
 # Create your models here.
 
 class Customer(models.Model):
-    firstName = models.CharField(max_length=100)
-    lastName = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
     phone = models.BigIntegerField()
     email = models.EmailField()
+    qb_id = models.BigIntegerField()
 
 
 class OutreachLog(models.Model):
