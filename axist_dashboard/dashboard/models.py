@@ -4,8 +4,8 @@ from django.db import models
 
 class Customer(models.Model):
     name = models.CharField(max_length=200)
-    phone = models.BigIntegerField()
-    email = models.EmailField()
+    phone = models.CharField(max_length=200, null = True)
+    email = models.EmailField(null = True)
     qb_id = models.BigIntegerField()
 
 

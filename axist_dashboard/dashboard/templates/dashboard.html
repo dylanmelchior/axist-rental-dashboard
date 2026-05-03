@@ -10,10 +10,10 @@
     <table>
         {% for customer in customers %}
             <tr>
-                <td>{{customer.firstName}}</td> 
-                <td>{{customer.lastName}} </td> 
-                <td>{{customer.email}}    </td>
-                <td>{{customer.phone}}    </td>
+                <td>QB ID: {{customer.id}}</td>
+                <td>{{customer.name}}</td>
+                <td>{{customer.email}}</td>
+                <td>{{customer.phone}}</td>
             </tr>
         {% endfor %}
     </table>
