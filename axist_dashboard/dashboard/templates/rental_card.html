@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/main.css" />
+    <title>Rental #{{ rental.id }}</title>
+  </head>
+    <header>
+    <nav>
+        <p><a href="/"> Home </a></p>
+        <p><a href="/rentals/"> Rental Dashboard </a></p>
+    </nav>
+    </header>
+  <body>
+    <h1>Rental #{{ rental.id }}</h1>
+
+    <section>
+      <h2>Details</h2>
+      <p><strong>Customer:</strong> {{ rental.customer.name }}</p>
+      <p><strong>Location:</strong> {{ rental.location }}</p>
+      <p><strong>Delivery:</strong> {{ rental.deliveryDate }}</p>
+      <p><strong>Event Start:</strong> {{ rental.eventStartDate }}</p>
+      <p><strong>Event End:</strong> {{ rental.eventEndDate }}</p>
+      <p><strong>Pickup:</strong> {{ rental.pickupDate }}</p>
+      <p><strong>Total Price:</strong> ${{ rental.totalPrice }}</p>
+    </section>
+
+    <section>
+      <h2>Items</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in rental_items %}
+          <tr>
+            <td>{{ item.item.name }}</td>
+            <td>{{ item.item.itemDescription }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>${{ item.item.itemPrice }}</td>
+            <td>${{ item.quantity|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">No items on this rental.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4"><strong>Total</strong></td>
+            <td><strong>${{ rental.totalPrice }}</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+  </body>
+</html>

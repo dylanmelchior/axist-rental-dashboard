@@ -101,8 +101,43 @@ def create_customer(request):
         print("New Customer Created")
     customers = Customer.objects.all()
     items = Item.objects.all()
-    return render(request, "dashboard.html", {
+    return redirect("dashboard")
+
+
+def get_item_data(request, item_id):
+    item = Item.objects.get(pk=item_id)
+    return JsonResponse({
+        'name': item.name,
+        'price': item.itemPrice,
+        'description': item.itemDescription,
+    })
+
+def new_customer(request):
+    return render(request, "new_customer_form.html")
+
+def customers(request):
+    customers = Customer.objects.all()
+    return render(request, "customers.html", {
         "customers" : customers,
+    })
+
+def rentals(request):
+    rentals = Rental.objects.all()
+    return render(request, "rentals.html", {
+        "rentals": rentals,
+    })
+
+def rental_card(request, id):
+    rental = get_object_or_404(Rental, pk=id)
+    rental_items = RentalItem.objects.filter(rental = rental)
+    return render(request, "rental_card.html", {
+        "rental" : rental,
+        "rental_items" : rental_items,
+    })
+
+def new_rental(request):
+    items = Item.objects.all()
+    return render(request, "new_rental_form.html", {
         "items" : items,
         })
 
@@ -156,15 +191,4 @@ def create_rental(request):
 
         rental.totalPrice = totalPrice
         rental.save()
-    return redirect("dashboard")
-
-def get_item_data(request, item_id):
-    item = Item.objects.get(pk=item_id)
-    return JsonResponse({
-        'name': item.name,
-        'price': item.itemPrice,
-        'description': item.itemDescription,
-    })
-
-def newcustomer(request):
-    return render(request, "add_customer.html")
+    return redirect("rentals")
