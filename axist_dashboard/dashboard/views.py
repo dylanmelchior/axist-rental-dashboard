@@ -10,13 +10,17 @@ from intuitlib.enums import Scopes
 from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer as QBCustomer
 from .scripts.sync import sync_customers_from_qb
-from .models import Customer, OutreachLog
+from .models import Customer, OutreachLog, Item, RentalItem, Rental
 
 # Create your views here.
 
 def dashboard(request):
     customers = Customer.objects.all()
-    return render(request, "dashboard.html", {"customers" : customers})
+    items = Item.objects.all()
+    return render(request, "dashboard.html", {
+        "customers" : customers,
+        "items" : items,
+        })
 
 def get_auth_client(request):
     return AuthClient(
@@ -96,4 +100,71 @@ def create_customer(request):
         Customer.objects.create(name = name, phone = phone, email = email, qb_id = qbID)
         print("New Customer Created")
     customers = Customer.objects.all()
-    return render(request, "dashboard.html", {"customers" : customers})
+    items = Item.objects.all()
+    return render(request, "dashboard.html", {
+        "customers" : customers,
+        "items" : items,
+        })
+
+@requires_csrf_token
+def create_rental(request):
+    if request.method == "POST":
+        customer = get_object_or_404(Customer, qb_id = int(request.POST["qbID"]))
+        location = request.POST["location"]
+
+        deliveryDate = request.POST.get("deliveryDate")
+        if not deliveryDate:
+            deliveryDate = "TBD"
+
+        eventStart = request.POST.get("eventStart")
+        if not eventStart:
+            eventStart = "TBD"
+
+        eventEnd = request.POST.get("eventEnd")
+        if not eventEnd:
+            eventEnd = "TBD"
+
+        pickupDate = request.POST.get("pickupDate")
+        if not pickupDate:
+            pickupDate = "TBD"
+
+        rental = Rental.objects.create(
+            customer = customer,
+            location = location,
+            deliveryDate = deliveryDate,
+            eventDateStart = eventStart,
+            eventDateEnd = eventEnd,
+            pickupDate = pickupDate,
+            totalPrice = 0
+        )
+
+        # Create all rental items
+        i = 0
+        totalPrice = 0
+        while f"items-{i}-item_id" in request.POST:
+            item_id   = request.POST[f"items-{i}-item_id"]
+            quantity  = request.POST[f"items-{i}-quantity"]
+            unit_price = request.POST[f"items-{i}-unit_price"]
+
+            RentalItem.objects.create(
+                rental=rental,
+                item=Item.objects.get(pk=item_id),
+                quantity=quantity,
+            )
+            totalPrice += float(unit_price) * int(quantity)
+            i += 1
+
+        rental.totalPrice = totalPrice
+        rental.save()
+    return redirect("dashboard")
+
+def get_item_data(request, item_id):
+    item = Item.objects.get(pk=item_id)
+    return JsonResponse({
+        'name': item.name,
+        'price': item.itemPrice,
+        'description': item.itemDescription,
+    })
+
+def newcustomer(request):
+    return render(request, "add_customer.html")
