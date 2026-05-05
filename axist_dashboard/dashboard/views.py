@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django.views.decorators.csrf import requires_csrf_token
 from django.shortcuts import get_object_or_404, redirect, render
 import os
 from intuitlib.client import AuthClient
@@ -81,4 +82,18 @@ def get_customers(request):
     request.session["access_token"] = auth_client.access_token
     request.session["refresh_token"] = auth_client.refresh_token
 
-    return JsonResponse({"customers": customers_json})
+    return redirect("dashboard")
+
+@requires_csrf_token
+def create_customer(request):
+    if request.method == "POST":
+        name = request.POST["name"]
+        email = request.POST["email"]
+        phone = request.POST.get("phone")
+        if not phone:
+            phone = ""
+        qbID = request.POST["qbID"]
+        Customer.objects.create(name = name, phone = phone, email = email, qb_id = qbID)
+        print("New Customer Created")
+    customers = Customer.objects.all()
+    return render(request, "dashboard.html", {"customers" : customers})

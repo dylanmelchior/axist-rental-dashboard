@@ -7,4 +7,5 @@ urlpatterns = [
     path("login/", views.login, name="login"),
     path("callback/", views.callback, name="callback"),
     path("customers/", views.get_customers, name="get_customers"),
+    path("createcustomer/", views.create_customer, name="create_customer"),
 ]
