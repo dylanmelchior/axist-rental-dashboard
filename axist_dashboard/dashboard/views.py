@@ -5,12 +5,14 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import requires_csrf_token
 from django.shortcuts import get_object_or_404, redirect, render
 import os
+import calendar
 from intuitlib.client import AuthClient
 from intuitlib.enums import Scopes
 from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer as QBCustomer
 from .scripts.sync import sync_customers_from_qb
 from .models import Customer, OutreachLog, Item, RentalItem, Rental
+from datetime import datetime, timedelta
 
 # Create your views here.
 
@@ -82,7 +84,7 @@ def get_customers(request):
 
     sync_customers_from_qb(customers_json)
 
-    # update tokens in case they got refreshed
+    # updatetime tokens in case they got refreshed
     request.session["access_token"] = auth_client.access_token
     request.session["refresh_token"] = auth_client.refresh_token
 
@@ -122,9 +124,62 @@ def customers(request):
     })
 
 def rentals(request):
-    rentals = Rental.objects.all()
-    return render(request, "rentals.html", {
-        "rentals": rentals,
+    today = datetime.today()
+    year  = int(request.GET.get('year',  today.year))
+    month = int(request.GET.get('month', today.month))
+
+    # prev/next month nav
+    prev = datetime(year, month, 1).replace(day=1)
+    prev = (prev.replace(day=1) - timedelta(days=1)).replace(day=1)
+    next_m = datetime(year, month, 28) + timedelta(days=4)
+    next_m = next_m.replace(day=1)
+
+    # pull all rentals touching this month
+    month_start = datetime(year, month, 1)
+    month_end   = datetime(year, month, calendar.monthrange(year, month)[1])
+    rentals = Rental.objects.filter(
+        pickupDate__gte=month_start,
+        deliveryDate__lte=month_end
+    )
+
+    # build a lookup: datetime -> {deliveries, events, pickups}
+    day_map = {}
+    for r in rentals:
+        for dt, bucket in [
+            (r.deliveryDate, 'deliveries'),
+            (r.eventDateStart,   'events'),
+            (r.eventDateEnd,     'events'),
+            (r.pickupDate,   'pickups'),
+        ]:
+            d = dt.date()
+            if d not in day_map:
+                day_map[d] = {'deliveries': [], 'events': [], 'pickups': []}
+            # avoid dupe event pills for multi-day events
+            if r not in day_map[d][bucket]:
+                day_map[d][bucket].append(r)
+
+    # build calendar weeks
+    cal = calendar.Calendar(firstweekday=6)  # Sunday first
+    weeks = []
+    for week in cal.monthdatescalendar(year, month):
+        row = []
+        for d in week:
+            row.append({
+                'date':      d,
+                'in_month':  d.month == month,
+                'is_today':  d == today,
+                'deliveries': day_map.get(d, {}).get('deliveries', []),
+                'events':     day_map.get(d, {}).get('events', []),
+                'pickups':    day_map.get(d, {}).get('pickups', []),
+            })
+        weeks.append(row)
+
+    return render(request, 'rentals.html', {
+        'calendar_weeks': weeks,
+        'month_label':    datetime(year, month, 1).strftime('%B %Y'),
+        'day_names':      ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+        'prev_year':      prev.year,   'prev_month': prev.month,
+        'next_year':      next_m.year, 'next_month': next_m.month,
     })
 
 def rental_card(request, id):
