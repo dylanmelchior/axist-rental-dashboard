@@ -190,6 +190,22 @@ def rental_card(request, id):
         "rental_items" : rental_items,
     })
 
+def rentals_list_view(request):
+    today = datetime.today()
+    year  = int(request.GET.get('year', today.year))
+
+    year_start = datetime(year, 1, 1)
+    year_end   = datetime(year, 12, 31, 23, 59, 59)
+
+    rentals = Rental.objects.prefetch_related('rentalitem_set__item').filter(
+        pickupDate__gte=year_start,
+        deliveryDate__lte=year_end
+    ).order_by('deliveryDate')
+
+    return render(request, 'rentals_list_view.html', {
+        'rentals': rentals,
+    })
+
 def new_rental(request):
     items = Item.objects.all()
     return render(request, "new_rental_form.html", {
