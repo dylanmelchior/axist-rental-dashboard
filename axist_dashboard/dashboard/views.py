@@ -11,6 +11,7 @@ from intuitlib.enums import Scopes
 from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer as QBCustomer
 from .scripts.sync import sync_customers_from_qb
+from .scripts.utils import send_sms
 from .models import Customer, OutreachLog, Item, RentalItem, Rental
 from datetime import datetime, timedelta
 
@@ -185,9 +186,11 @@ def rentals(request):
 def rental_card(request, id):
     rental = get_object_or_404(Rental, pk=id)
     rental_items = RentalItem.objects.filter(rental = rental)
+    customer = rental.customer
     return render(request, "rental_card.html", {
         "rental" : rental,
         "rental_items" : rental_items,
+        "customer" : customer,
     })
 
 def rentals_list_view(request):
@@ -263,3 +266,20 @@ def create_rental(request):
         rental.totalPrice = totalPrice
         rental.save()
     return redirect("rentals")
+
+def send_out_for_delivery_view(request):
+    if request.method == "POST":
+        customer_id = request.POST.get('customer_id')
+        customer = Customer.objects.get(id = customer_id)
+        send_sms(customer.phone, f"Hello {customer.name}, this is an automated message from Axis T. Our delivery crew is on the way to your address. Please be on the lookout for a call when they arrive.")
+        return redirect('/rentals/')
+
+def sms_consent_view(request):
+    if request.method == 'POST':
+        phone = request.POST.get('phone')
+        customer = Customer.objects.filter(phone=phone).first()
+        if customer:
+            customer.sms_consent = True
+            customer.save()
+        return redirect('/consent-confirmed/')
+    return render(request, 'sms_consent.html')

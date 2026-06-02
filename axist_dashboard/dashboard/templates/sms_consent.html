@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/main.css" />
+    <title>SMS Opt-In</title>
+  </head>
+  <body>
+    <header>
+      <div class="header-logo">
+        <img src="/static/axist_footer_logo.png" />
+      </div>
+    </header>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="tel" name="phone" placeholder="Your phone number" required/>
+      <input type="checkbox" name="consent" required />
+      <label>I agree to receive SMS notifications from Axis T Rentals. We will only send you automated text messages regarding the delivery and pickup of your rental.</label>
+      <button type="submit">Opt In</button>
+    </form>
+  </body>
+</html>

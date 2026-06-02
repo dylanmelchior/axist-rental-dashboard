@@ -9,8 +9,15 @@
   <body>
     <header>
       <nav>
-        <p><a href="/"> Home </a></p>
-        <p><a href="/newrental/"> New Rental </a></p>
+        <div class="header-logo">
+          <img src="/static/axist_footer_logo.png" />
+        </div>
+        <div class="home-link">
+          <p><a href="/"> Home </a></p>
+        </div>
+        <div class="nav-link">
+          <p><a href="/newrental/"> New Rental </a></p>
+        </div>
       </nav>
     </header>
     <style>
@@ -161,8 +168,7 @@
             class="rental-pill pill-delivery"
             title="{{ rental.customer }} — ${{ rental.totalPrice }}"
           >
-            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer
-            }}
+            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer }}
           </a>
           {% endfor %} {% for rental in day.events %}
           <a
@@ -178,8 +184,7 @@
             class="rental-pill pill-pickup"
             title="{{ rental.customer }} — ${{ rental.totalPrice }}"
           >
-            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer
-            }}
+            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer }}
           </a>
           {% endfor %}
         </div>

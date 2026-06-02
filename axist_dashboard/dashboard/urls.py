@@ -16,4 +16,6 @@ urlpatterns = [
     path("rentals/", views.rentals, name="rentals"),
     path("rentals/list_view", views.rentals_list_view, name="rentals_list_view"),
     path("rentals/<int:id>", views.rental_card, name="rental_card"),
+    path("send-out-for-delivery/", views.send_out_for_delivery_view, name="send_out_for_delivery"),
+    path("sms-consent/", views.sms_consent_view, name = "sms_consent"),
 ]
