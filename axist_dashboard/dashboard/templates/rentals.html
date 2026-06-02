@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="/static/main.css" />
     <title>Dashboard</title>
   </head>
-  <header>
-    <nav>
-      <p><a href="/"> Home </a></p>
-      <p><a href="/newrental/"> New Rental </a></p>
-    </nav>
-  </header>
   <body>
+    <header>
+      <nav>
+        <p><a href="/"> Home </a></p>
+        <p><a href="/newrental/"> New Rental </a></p>
+      </nav>
+    </header>
     <style>
       .cal-wrap {
         max-width: 1100px;
@@ -136,7 +136,9 @@
         >
           <a href="?year={{ prev_year }}&month={{ prev_month }}">&larr; Prev</a>
           <a href="?year={{ next_year }}&month={{ next_month }}">Next &rarr;</a>
-          <a href="{% url 'rentals_list_view' %}" style="margin-left: 8px">List view</a>
+          <a href="{% url 'rentals_list_view' %}" style="margin-left: 8px"
+            >List view</a
+          >
         </div>
       </div>
 
@@ -148,30 +150,40 @@
 
       <div class="cal-grid">
         {% for week in calendar_weeks %} {% for day in week %}
-        <div class="cal-day {% if not day.in_month %}other-month{% endif %} {% if day.is_today %}today{% endif %}">
+        <div
+          class="cal-day {% if not day.in_month %}other-month{% endif %} {% if day.is_today %}today{% endif %}"
+        >
           <div class="day-num">{{ day.date.day }}</div>
 
           {% for rental in day.deliveries %}
-          <a href="{% url 'rental_card' rental.id %}" class="rental-pill pill-delivery"
-            title="{{ rental.customer }} — ${{ rental.totalPrice }}">
-            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer }}
+          <a
+            href="{% url 'rental_card' rental.id %}"
+            class="rental-pill pill-delivery"
+            title="{{ rental.customer }} — ${{ rental.totalPrice }}"
+          >
+            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer
+            }}
           </a>
-          {% endfor %} 
-          {% for rental in day.events %}
-          <a href="{% url 'rental_card' rental.id %}" class="rental-pill pill-event"
-            title="{{ rental.customer }} — ${{ rental.totalPrice }}">
+          {% endfor %} {% for rental in day.events %}
+          <a
+            href="{% url 'rental_card' rental.id %}"
+            class="rental-pill pill-event"
+            title="{{ rental.customer }} — ${{ rental.totalPrice }}"
+          >
             {{ rental.events|date:"g:i A" }} {{ rental.customer }}
           </a>
-          {% endfor %} 
-          {% for rental in day.pickups %}
-          <a href="{% url 'rental_card' rental.id%}" class="rental-pill pill-pickup"
-            title="{{ rental.customer }} — ${{ rental.totalPrice }}">
-            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer }}
+          {% endfor %} {% for rental in day.pickups %}
+          <a
+            href="{% url 'rental_card' rental.id%}"
+            class="rental-pill pill-pickup"
+            title="{{ rental.customer }} — ${{ rental.totalPrice }}"
+          >
+            &#x1F69A; {{ rental.deliveryDate|date:"g:i A" }} {{ rental.customer
+            }}
           </a>
           {% endfor %}
         </div>
-        {% endfor %} 
-        {% endfor %}
+        {% endfor %} {% endfor %}
       </div>
 
       <div class="legend">

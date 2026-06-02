@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="/static/main.css" />
     <title>Dashboard</title>
   </head>
-  <header>
-    <nav>
+  <body>
+    <header>
+      <nav>
         <p><a href="/"> Home </a></p>
         <p><a href="/newcustomer/"> New Customer </a></p>
-    </nav>
-</header>
-  <body>
+      </nav>
+    </header>
     <table>
       {% for customer in customers %}
       <tr>
@@ -23,6 +23,5 @@
       </tr>
       {% endfor %}
     </table>
-
   </body>
 </html>

@@ -1,12 +1,10 @@
-table {
-    border: solid black 1px;
+header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-td {
-    border: solid black 1px;
-    padding: 1rem;
+nav {
+    color: red;
 }
 
-tr {
-    padding: 1rem;
-}
