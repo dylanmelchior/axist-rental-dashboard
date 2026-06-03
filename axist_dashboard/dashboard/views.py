@@ -16,7 +16,20 @@ from .models import Customer, OutreachLog, Item, RentalItem, Rental
 from datetime import datetime, timedelta
 
 # Create your views here.
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('/dashboard/')
+        else: 
+            return render(request, 'login.html', {'error': 'Invalid Credentials'})
 
+    return render(request, 'login.html')
+
+@login_required
 def dashboard(request):
     customers = Customer.objects.all()
     items = Item.objects.all()
@@ -25,6 +38,7 @@ def dashboard(request):
         "items" : items,
         })
 
+@login_required
 def get_auth_client(request):
     return AuthClient(
         client_id=os.environ["QB_CLIENT_ID"],
@@ -34,12 +48,14 @@ def get_auth_client(request):
         access_token=request.session.get("access_token"),
     )
 
-def login(request):
+@login_required
+def quickbooks_login(request):
     auth_client = get_auth_client(request)
     auth_url = auth_client.get_authorization_url([Scopes.ACCOUNTING])
     request.session["state"] = auth_client.state_token
     return redirect(auth_url)
 
+@login_required
 def callback(request):
     auth_client = get_auth_client(request)
 
@@ -58,6 +74,7 @@ def callback(request):
 
     return redirect("get_customers")
 
+@login_required
 def get_customers(request):
     if "access_token" not in request.session:
         return redirect("login")
@@ -92,6 +109,7 @@ def get_customers(request):
     return redirect("dashboard")
 
 @requires_csrf_token
+@login_required
 def create_customer(request):
     if request.method == "POST":
         name = request.POST["name"]
@@ -106,7 +124,7 @@ def create_customer(request):
     items = Item.objects.all()
     return redirect("dashboard")
 
-
+@login_required
 def get_item_data(request, item_id):
     item = Item.objects.get(pk=item_id)
     return JsonResponse({
@@ -115,15 +133,18 @@ def get_item_data(request, item_id):
         'description': item.itemDescription,
     })
 
+@login_required
 def new_customer(request):
     return render(request, "new_customer_form.html")
 
+@login_required
 def customers(request):
     customers = Customer.objects.all()
     return render(request, "customers.html", {
         "customers" : customers,
     })
 
+@login_required
 def rentals(request):
     today = datetime.today()
     year  = int(request.GET.get('year',  today.year))
@@ -183,6 +204,7 @@ def rentals(request):
         'next_year':      next_m.year, 'next_month': next_m.month,
     })
 
+@login_required
 def rental_card(request, id):
     rental = get_object_or_404(Rental, pk=id)
     rental_items = RentalItem.objects.filter(rental = rental)
@@ -193,6 +215,7 @@ def rental_card(request, id):
         "customer" : customer,
     })
 
+@login_required
 def rentals_list_view(request):
     today = datetime.today()
     year  = int(request.GET.get('year', today.year))
@@ -209,12 +232,14 @@ def rentals_list_view(request):
         'rentals': rentals,
     })
 
+@login_required
 def new_rental(request):
     items = Item.objects.all()
     return render(request, "new_rental_form.html", {
         "items" : items,
         })
 
+@login_required
 @requires_csrf_token
 def create_rental(request):
     if request.method == "POST":
@@ -267,6 +292,7 @@ def create_rental(request):
         rental.save()
     return redirect("rentals")
 
+@login_required
 def send_out_for_delivery_view(request):
     if request.method == "POST":
         customer_id = request.POST.get('customer_id')

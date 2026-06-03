@@ -26,4 +26,18 @@ nav {
     gap: 1rem;
 }
 
+.login-container {
+    display: flex;
+    justify-content: center;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.header-logo {
+    padding: 1rem;
+}
 

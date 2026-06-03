@@ -13,7 +13,7 @@
           <img src="/static/axist_footer_logo.png" />
         </div>
         <div class="home-link">
-          <p><a href="/"> Home </a></p>
+          <p><a href="/dashboard/"> Home </a></p>
         </div>
         <div class="nav-link">
           <p><a href="/newrental/"> New Rental </a></p>
@@ -125,7 +125,7 @@
             <td>
               <ul class="items-list">
                 {% for item in rental.rentalitem_set.all %}
-                <li>{{ item.quantity }}x {{ item.item }}</li>
+                <li>{{ item.quantity }}x {{ item.item.name }}</li>
                 {% empty %}
                 <li style="color: #aaa">—</li>
                 {% endfor %}
