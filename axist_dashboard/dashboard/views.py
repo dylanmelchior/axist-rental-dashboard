@@ -13,11 +13,11 @@ from quickbooks.objects.customer import Customer as QBCustomer
 from quickbooks.objects.base import EmailAddress, PhoneNumber
 from .scripts.sync import sync_customers_from_qb
 from .scripts.utils import send_sms
-from .scripts.quickbooks_utils import qb_required
+from .scripts.quickbooks_utils import qb_required, get_auth_client
 from .models import Customer, OutreachLog, Item, RentalItem, Rental
 from datetime import datetime, timedelta
 
-# Create your views here.
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -25,11 +25,37 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('/dashboard/')
+            return redirect('quickbooks_login')
         else: 
             return render(request, 'login.html', {'error': 'Invalid Credentials'})
 
     return render(request, 'login.html')
+    
+@login_required
+def quickbooks_login(request):
+    auth_client = get_auth_client(request)
+    auth_url = auth_client.get_authorization_url([Scopes.ACCOUNTING])
+    request.session["state"] = auth_client.state_token
+    return redirect(auth_url)
+
+@login_required
+def callback(request):
+    auth_client = get_auth_client(request)
+
+    error = request.GET.get("error")
+    if error:
+        return JsonResponse({"error": error}, status=400)
+
+    auth_code = request.GET.get("code")
+    realm_id = request.GET.get("realmId")
+
+    auth_client.get_bearer_token(auth_code, realm_id=realm_id)
+
+    request.session["access_token"] = auth_client.access_token
+    request.session["refresh_token"] = auth_client.refresh_token
+    request.session["realm_id"] = realm_id
+
+    return redirect("dashboard")
 
 @login_required
 def dashboard(request):
@@ -79,6 +105,46 @@ def get_item_data(request, item_id):
 @login_required
 def new_customer(request):
     return render(request, "new_customer_form.html")
+
+@qb_required
+@requires_csrf_token
+@login_required
+def update_customer_post(request, customer_id, qb_client = None):
+    if request.method == "POST":
+        # Get form input
+        customer = Customer.objects.get(pk = customer_id)
+        name = request.POST["name"]
+        email = request.POST["email"]
+        phone = request.POST.get("phone")
+        if not phone:
+            phone = ""
+
+        # Modify Local Database
+        customer.name = name
+        customer.email = email
+        customer.phone = phone
+        customer.save()
+
+        # Modify QB Database
+        qb_customer = QBCustomer.get(customer.qb_id, qb=qb_client)
+        qb_customer.DisplayName = name
+
+        qb_customer.PrimaryEmailAddr = EmailAddress()
+        qb_customer.PrimaryEmailAddr.Address = email
+
+        qb_customer.PrimaryPhone = PhoneNumber()
+        qb_customer.PrimaryPhone.FreeFormNumber = phone
+
+        qb_customer.save(qb=qb_client)
+    return redirect("dashboard")
+    
+
+@login_required
+def update_customer_get(request, customer_id):
+    customer = Customer.objects.get(pk=customer_id)
+    return render(request, "update_customer_form.html", {
+        "customer" : customer,
+    })
 
 @login_required
 def customers(request):

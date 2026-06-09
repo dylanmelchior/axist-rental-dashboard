@@ -7,6 +7,9 @@
     <title>Dashboard</title>
   </head>
   <body>
+    <script>
+
+    </script>
     <header>
       <nav>
         <div class="header-logo">
@@ -23,10 +26,11 @@
     <table>
       {% for customer in customers %}
       <tr>
-        <td>QB ID: {{customer.id}}</td>
+        <td>QB ID: {{customer.qb_id}}</td>
         <td>{{customer.name}}</td>
         <td>{{customer.email}}</td>
         <td>{{customer.phone}}</td>
+        <td><a href="{% url 'update_customer_get' customer.id %}">Update</a></td>
       </tr>
       {% endfor %}
     </table>
