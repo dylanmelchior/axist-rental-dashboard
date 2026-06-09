@@ -10,8 +10,10 @@ from intuitlib.client import AuthClient
 from intuitlib.enums import Scopes
 from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer as QBCustomer
+from quickbooks.objects.base import EmailAddress, PhoneNumber
 from .scripts.sync import sync_customers_from_qb
 from .scripts.utils import send_sms
+from .scripts.quickbooks_utils import qb_required
 from .models import Customer, OutreachLog, Item, RentalItem, Rental
 from datetime import datetime, timedelta
 
@@ -38,90 +40,31 @@ def dashboard(request):
         "items" : items,
         })
 
-@login_required
-def get_auth_client(request):
-    return AuthClient(
-        client_id=os.environ["QB_CLIENT_ID"],
-        client_secret=os.environ["QB_CLIENT_SECRET"],
-        redirect_uri="http://localhost:8000/callback",
-        environment="sandbox",
-        access_token=request.session.get("access_token"),
-    )
-
-@login_required
-def quickbooks_login(request):
-    auth_client = get_auth_client(request)
-    auth_url = auth_client.get_authorization_url([Scopes.ACCOUNTING])
-    request.session["state"] = auth_client.state_token
-    return redirect(auth_url)
-
-@login_required
-def callback(request):
-    auth_client = get_auth_client(request)
-
-    error = request.GET.get("error")
-    if error:
-        return JsonResponse({"error": error}, status=400)
-
-    auth_code = request.GET.get("code")
-    realm_id = request.GET.get("realmId")
-
-    auth_client.get_bearer_token(auth_code, realm_id=realm_id)
-
-    request.session["access_token"] = auth_client.access_token
-    request.session["refresh_token"] = auth_client.refresh_token
-    request.session["realm_id"] = realm_id
-
-    return redirect("get_customers")
-
-@login_required
-def get_customers(request):
-    if "access_token" not in request.session:
-        return redirect("login")
-
-    auth_client = get_auth_client(request)
-
-    client = QuickBooks(
-        auth_client=auth_client,
-        refresh_token=request.session["refresh_token"],
-        company_id=request.session["realm_id"],
-        minorversion=75,
-    )
-
-    qb_customers = QBCustomer.all(qb=client)
-
-    customers_json = [
-        {
-            "id": c.Id,
-            "name": c.DisplayName,
-            "email": getattr(c.PrimaryEmailAddr, "Address", None),
-            "phone": getattr(c.PrimaryPhone, "FreeFormNumber", None),
-        }
-        for c in qb_customers
-    ]
-
-    sync_customers_from_qb(customers_json)
-
-    # updatetime tokens in case they got refreshed
-    request.session["access_token"] = auth_client.access_token
-    request.session["refresh_token"] = auth_client.refresh_token
-
-    return redirect("dashboard")
-
+@qb_required
 @requires_csrf_token
 @login_required
-def create_customer(request):
+def create_customer(request, qb_client=None):
     if request.method == "POST":
         name = request.POST["name"]
         email = request.POST["email"]
         phone = request.POST.get("phone")
         if not phone:
             phone = ""
-        qbID = request.POST["qbID"]
-        Customer.objects.create(name = name, phone = phone, email = email, qb_id = qbID)
+        
+        # Create Customer in Quickbooks
+        qb_customer = QBCustomer()
+        qb_customer.DisplayName = name
+
+        qb_customer.PrimaryEmailAddr = EmailAddress()
+        qb_customer.PrimaryEmailAddr.Address = email
+
+        qb_customer.PrimaryPhone = PhoneNumber()
+        qb_customer.PrimaryPhone.FreeFormNumber = phone
+
+        qb_customer.save(qb=qb_client)
+
+        Customer.objects.create(name = name, phone = phone, email = email, qb_id = qb_customer.Id)
         print("New Customer Created")
-    customers = Customer.objects.all()
-    items = Item.objects.all()
     return redirect("dashboard")
 
 @login_required
