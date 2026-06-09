@@ -5,3 +5,4 @@
 CACHEDIR.TAG
 /Scripts
 pyvenv.cfg
+db.sqlite3

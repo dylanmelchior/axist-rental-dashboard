@@ -14,7 +14,7 @@ from quickbooks.objects.base import EmailAddress, PhoneNumber
 from .scripts.sync import sync_customers_from_qb
 from .scripts.utils import send_sms
 from .scripts.quickbooks_utils import qb_required, get_auth_client
-from .models import Customer, OutreachLog, Item, RentalItem, Rental
+from .models import Customer, OutreachLog, Item, RentalItem, Rental, Estimate, EstimateItem
 from datetime import datetime, timedelta
 
 
@@ -300,6 +300,39 @@ def create_rental(request):
         rental.totalPrice = totalPrice
         rental.save()
     return redirect("rentals")
+
+@login_required
+def estimates_view(request):
+    today = datetime.today()
+    year  = int(request.GET.get('year', today.year))
+
+    year_start = datetime(year, 1, 1)
+    year_end   = datetime(year, 12, 31, 23, 59, 59)
+
+    estimates = Estimate.objects.prefetch_related('estimateitem_set__item').filter(
+        pickupDate__gte=year_start,
+        deliveryDate__lte=year_end
+    ).order_by('deliveryDate')
+
+    return render(request, 'estimates.html', {
+        'estimates': estimates,
+    })
+
+@login_required
+def estimate_card(request, id):
+    estimate = get_object_or_404(Estimate, pk=id)
+    estimate_items = EstimateItem.objects.filter(estimate = estimate)
+    customer = estimate.customer
+    return render(request, "estimate_card.html", {
+        "estimate" : estimate,
+        "estimate_items" : estimate_items,
+        "customer" : customer,
+    })
+
+@login_required
+def new_estimate_get(request):
+    items = Item.objects.all()
+    return
 
 @login_required
 def send_out_for_delivery_view(request):

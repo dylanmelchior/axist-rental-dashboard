@@ -49,6 +49,7 @@ class Estimate(models.Model):
     eventDateStart = models.DateTimeField(null = True)
     eventDateEnd = models.DateTimeField(null = True)
     pickupDate = models.DateTimeField(null = True)
+    isAccepted = models.BooleanField(default = False)
 
 class EstimateItem(models.Model):
     estimate = models.ForeignKey(Estimate, on_delete = models.CASCADE)
