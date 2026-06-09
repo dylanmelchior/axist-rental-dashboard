@@ -40,5 +40,27 @@ class RentalItem(models.Model):
     quantity = models.IntegerField()
     notes = models.CharField(max_length = 500, null = True)
 
+class Estimate(models.Model):
+    qbID = models.BigIntegerField()
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    location = models.CharField(max_length = 200)
+    totalPrice = models.DecimalField(max_digits = 20, decimal_places = 2, default=0)
+    deliveryDate = models.DateTimeField(null = True)
+    eventDateStart = models.DateTimeField(null = True)
+    eventDateEnd = models.DateTimeField(null = True)
+    pickupDate = models.DateTimeField(null = True)
+
+class EstimateItem(models.Model):
+    estimate = models.ForeignKey(Estimate, on_delete = models.CASCADE)
+    item = models.ForeignKey(Item, on_delete = models.CASCADE)
+    quantity = models.IntegerField()
+    notes = models.CharField(max_length = 500, null = True)
+
+class Invoice(models.Model):
+    qbID = models.BigIntegerField()
+    rental = models.ForeignKey(Rental, on_delete = models.CASCADE)
+
+
+
     
 
