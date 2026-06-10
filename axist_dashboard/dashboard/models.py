@@ -33,6 +33,7 @@ class Item(models.Model):
     itemHeight = models.DecimalField(max_digits = 6, decimal_places = 2)
     itemDepth = models.DecimalField(max_digits = 6, decimal_places = 2)
     itemDescription = models.CharField(max_length = 200, null = True)
+    qb_id = models.IntegerField(default = 1, null = False)
 
 class RentalItem(models.Model):
     rental = models.ForeignKey(Rental, on_delete = models.CASCADE)
@@ -41,7 +42,7 @@ class RentalItem(models.Model):
     notes = models.CharField(max_length = 500, null = True)
 
 class Estimate(models.Model):
-    qbID = models.BigIntegerField()
+    qb_id = models.BigIntegerField()
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     location = models.CharField(max_length = 200)
     totalPrice = models.DecimalField(max_digits = 20, decimal_places = 2, default=0)

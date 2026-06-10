@@ -4,53 +4,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/main.css" />
-    <title>New Rental</title>
+    <title>New Estimate</title>
     </head>
 <body>
-<form method="post" action="/createrental/" id="create-new-rental-form">
-      {% csrf_token %}
+<form method="post" action="/estimates/new-post" id="create-new-estimate-form">
+    {% csrf_token %}
       <p>
-        <label for="new-rental-qbID">Customer Quickbooks ID: </label>
-        <input type="number" id="new-rental-qbID" name="qbID" required />
+        <select name = "id">
+        <option value="">-- Select Customer --</option>
+        {% for customer in customers %}
+        <option value="{{ customer.id }}">{{ customer.name }}</option>
+        {% endfor %}
+        </select>
+      <p>
+        <label for="new-estimate-location">Address: </label>
+        <input type="text" id="new-estimate-location" name="location" required />
       </p>
 
       <p>
-        <label for="new-rental-location">Address: </label>
-        <input type="text" id="new-rental-location" name="location" required />
-      </p>
-
-      <p>
-        <label for="new-rental-deliveryDate">Delivery Date/Time: </label>
+        <label for="new-estimate-deliveryDate">Delivery Date/Time: </label>
         <input
           type="datetime-local"
-          id="new-rental-deliveryDate"
+          id="new-estimate-deliveryDate"
           name="deliveryDate"
         />
       </p>
 
       <p>
-        <label for="new-rental-eventDateStart">Event Start: </label>
+        <label for="new-estimate-eventDateStart">Event Start: </label>
         <input
           type="datetime-local"
-          id="new-rental-eventDateStart"
+          id="new-estimate-eventDateStart"
           name="eventStart"
         />
       </p>
 
       <p>
-        <label for="new-rental-eventDateEnd">Event End: </label>
+        <label for="new-estimate-eventDateEnd">Event End: </label>
         <input
           type="datetime-local"
-          id="new-rental-eventDateEnd"
+          id="new-estimate-eventDateEnd"
           name="eventEnd"
         />
       </p>
 
       <p>
-        <label for="new-rental-pickupDate">Pickup Date/Time: </label>
+        <label for="new-estimate-pickupDate">Pickup Date/Time: </label>
         <input
           type="datetime-local"
-          id="new-rental-pickupDate"
+          id="new-estimate-pickupDate"
           name="pickupDate"
         />
       </p>
@@ -62,13 +64,14 @@
             <th>Description</th>
             <th>Quantity</th>
             <th>Price</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody class="item-table-body"></tbody>
       </table>
       <button type="button" id="add-item-row">Add Item</button>
 
-      <p><input type="submit" /></p>
+      <p><input type="submit"/></p>
     </form>
 
     <script>

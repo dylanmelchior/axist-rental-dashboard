@@ -1,20 +1,29 @@
+# Django imports
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import requires_csrf_token
 from django.shortcuts import get_object_or_404, redirect, render
-import os
-import calendar
+from .models import Customer, OutreachLog, Rental, RentalItem, Item, Estimate, EstimateItem, Invoice
+
+# Quickbooks imports
 from intuitlib.client import AuthClient
 from intuitlib.enums import Scopes
 from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer as QBCustomer
 from quickbooks.objects.base import EmailAddress, PhoneNumber
+from quickbooks.objects.estimate import Estimate as QBEstimate
+from quickbooks.objects.detailline import SalesItemLine, SalesItemLineDetail
+from quickbooks.objects.item import Item as QBItem
+
+# Utility imports
+import os
+import calendar
+from decimal import Decimal
 from .scripts.sync import sync_customers_from_qb
 from .scripts.utils import send_sms
 from .scripts.quickbooks_utils import qb_required, get_auth_client
-from .models import Customer, OutreachLog, Item, RentalItem, Rental, Estimate, EstimateItem
 from datetime import datetime, timedelta
 
 
@@ -332,7 +341,92 @@ def estimate_card(request, id):
 @login_required
 def new_estimate_get(request):
     items = Item.objects.all()
-    return
+    customers = Customer.objects.all()
+    return render(request, "new_estimate_form.html", {
+        "items": items,
+        "customers": customers,
+    })
+
+@requires_csrf_token
+@qb_required
+@login_required
+def new_estimate_post(request, qb_client = None):
+    if request.method == "POST":
+        # Local DB estimate creation
+        customer = get_object_or_404(Customer, id = int(request.POST["id"]))
+        location = request.POST["location"]
+
+        deliveryDate = request.POST.get("deliveryDate")
+        if not deliveryDate:
+            deliveryDate = "TBD"
+
+        eventStart = request.POST.get("eventStart")
+        if not eventStart:
+            eventStart = "TBD"
+
+        eventEnd = request.POST.get("eventEnd")
+        if not eventEnd:
+            eventEnd = "TBD"
+
+        pickupDate = request.POST.get("pickupDate")
+        if not pickupDate:
+            pickupDate = "TBD"
+
+        estimate = Estimate.objects.create(
+            customer = customer,
+            location = location,
+            deliveryDate = deliveryDate,
+            eventDateStart = eventStart,
+            eventDateEnd = eventEnd,
+            pickupDate = pickupDate,
+            totalPrice = 0
+        )
+
+        # Create all rental items
+        i = 0
+        totalPrice = 0
+        while f"items-{i}-item_id" in request.POST:
+            item_id   = request.POST[f"items-{i}-item_id"]
+            quantity  = request.POST[f"items-{i}-quantity"]
+            unit_price = request.POST[f"items-{i}-unit_price"]
+
+            EstimateItem.objects.create(
+                estimate=estimate,
+                item=Item.objects.get(pk=item_id),
+                quantity=quantity,
+            )
+            totalPrice += float(unit_price) * int(quantity)
+            i += 1
+        
+        # QB Estimate Creation
+        qb_estimate = QBEstimate()
+    
+        # Attach Customer
+        qb_estimate.CustomerRef = QBCustomer.get(estimate.customer.qb_id, qb=qb_client).to_ref()
+
+        # Build Line Items
+        lines = []
+        for estimateItem in estimate.estimateitem_set.all():
+            line = SalesItemLine()
+            item = estimateItem.item
+
+            line.Amount = Decimal(estimateItem.quantity * item.itemPrice)
+            detail = SalesItemLineDetail()
+            detail.ItemRef = QBItem.get(item.qb_id, qb=qb_client).to_ref()
+            detail.Qty = estimateItem.quantity
+            detail.UnitPrice = item.itemPrice
+        
+            line.SalesItemLineDetail = detail
+            lines.append(line)
+
+        qb_estimate.Line = lines
+        qb_estimate.save(qb=qb_client)
+
+        # store QB id back
+        estimate.qb_id = qb_estimate.Id
+        estimate.totalPrice = totalPrice
+        estimate.save()
+
 
 @login_required
 def send_out_for_delivery_view(request):
