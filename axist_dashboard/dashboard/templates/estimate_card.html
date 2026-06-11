@@ -103,6 +103,12 @@
         <button type="Submit">Convert to Invoice</button>
       </form>
 
+      <form method = "POST" action = "/estimates/{{estimate.id}}/send">
+        {% csrf_token %}
+        <input type = "hidden" name = "estimate_id" value = "{{estimate.id}}">
+        <button type = "Submit"> Send to Customer </button>
+      </form>
+
       <form method="POST" action="/send-out-for-delivery/">
         {% csrf_token %}
         <input type="hidden" name="customer_id" value="{{ customer.id }}">

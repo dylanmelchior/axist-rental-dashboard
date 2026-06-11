@@ -17,6 +17,7 @@ from quickbooks.objects.estimate import Estimate as QBEstimate
 from quickbooks.objects.detailline import SalesItemLine, SalesItemLineDetail
 from quickbooks.objects.item import Item as QBItem
 from quickbooks.objects.invoice import Invoice
+from quickbooks.objects.taxcode import TaxCode
 
 # Utility imports
 import os
@@ -26,7 +27,6 @@ from .scripts.sync import sync_customers_from_qb
 from .scripts.utils import send_sms
 from .scripts.quickbooks_utils import qb_required, get_auth_client
 from datetime import datetime, timedelta
-
 
 def login_view(request):
     if request.method == "POST":
@@ -121,6 +121,10 @@ def new_customer(request):
 @login_required
 def update_customer_post(request, customer_id, qb_client = None):
     if request.method == "POST":
+
+        tax_codes = TaxCode.all(qb=qb_client)
+        for tc in tax_codes:
+            print(tc.Id, tc.Name)
         # Get form input
         customer = Customer.objects.get(pk = customer_id)
         name = request.POST["name"]
@@ -381,7 +385,6 @@ def new_estimate_post(request, qb_client = None):
             eventDateEnd = eventEnd,
             pickupDate = pickupDate,
             totalPrice = 0,
-            qb_id = -1,
         )
 
         # Create all rental items
@@ -405,7 +408,8 @@ def new_estimate_post(request, qb_client = None):
     
         # Attach Customer
         qb_estimate.CustomerRef = QBCustomer.get(estimate.customer.qb_id, qb=qb_client).to_ref()
-        qb_estimate.BillEmail = customer.email
+        qb_estimate.BillEmail = EmailAddress()
+        qb_estimate.BillEmail.Address = customer.email
 
         # Build Line Items
         lines = []
@@ -436,13 +440,14 @@ def new_estimate_post(request, qb_client = None):
 @requires_csrf_token
 @qb_required
 @login_required
-def convert_estimate_to_invoice(request, estimate_id, qb_client = None,):
+def convert_estimate_to_invoice(request, estimate_id, qb_client = None):
     estimate = Estimate.objects.get(pk=estimate_id)
     customer = estimate.customer
     
     invoice = Invoice()
     invoice.CustomerRef = QBCustomer.get(estimate.customer.qb_id, qb=qb_client).to_ref()
-    invoice.BillEmail = customer.email
+    invoice.BillEmail = EmailAddress()
+    invoice.BillEmail.Address = customer.email
     invoice.LinkedTxn = [{"TxnId": estimate.qb_id, "TxnType": "Estimate"}]
 
     lines = []
@@ -466,6 +471,16 @@ def convert_estimate_to_invoice(request, estimate_id, qb_client = None,):
     estimate.invoice_qb_id = invoice.Id
     estimate.save()
 
+    return redirect("estimates_view")
+
+@requires_csrf_token
+@qb_required
+@login_required
+def send_estimate_to_customer(request, estimate_id, qb_client = None):
+    if request.method == "POST":
+        estimate = get_object_or_404(Estimate, pk = estimate_id)
+        qb_estimate = QBEstimate.get(estimate.qb_id, qb=qb_client)
+        qb_estimate.send(send_to = estimate.customer.email, qb=qb_client)
     return redirect("estimates_view")
 
 @login_required

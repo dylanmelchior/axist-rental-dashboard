@@ -43,7 +43,7 @@ class RentalItem(models.Model):
     notes = models.CharField(max_length = 500, null = True)
 
 class Estimate(models.Model):
-    qb_id = models.BigIntegerField()
+    qb_id = models.BigIntegerField(null = True)
     invoice_qb_id = models.BigIntegerField(null = True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     location = models.CharField(max_length = 200)
