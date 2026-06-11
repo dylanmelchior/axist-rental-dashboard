@@ -8,19 +8,35 @@
   </head>
   <body>
     <header>
-      <div class = "header-logo">
-      <img src = "/static/axist_footer_logo.png">
-      </div>
       <nav>
-        <div class = "home-link">
-        <p><a href="/dashboard/"> Home </a></p>
+        <div class="header-logo">
+          <img src="/static/axist_footer_logo.png" />
         </div>
-        <div class = "nav-link">
-        <p><a href="/customers/"> Customer Dashboard </a></p>
-        <p><a href="/rentals/"> Rental Dashboard </a></p>
-        <p><a href="/estimates/"> Estimates </a></p>
+        <div class="home-link">
+          <p><a href="/dashboard/">Home</a></p>
+        </div>
+        <div class="nav-link">
+          <p><a href="/customers/">Customers</a></p>
+          <p><a href="/rentals/">Rentals</a></p>
+          <p><a href="/estimates/">Estimates</a></p>
         </div>
       </nav>
     </header>
+    <div class="page-wrap">
+      <div class="dash-grid">
+        <a href="/customers/" class="dash-card">
+          <h3>Customers</h3>
+          <p>Manage customer records</p>
+        </a>
+        <a href="/rentals/" class="dash-card">
+          <h3>Rentals</h3>
+          <p>View rental calendar</p>
+        </a>
+        <a href="/estimates/" class="dash-card">
+          <h3>Estimates</h3>
+          <p>Browse and create estimates</p>
+        </a>
+      </div>
+    </div>
   </body>
 </html>

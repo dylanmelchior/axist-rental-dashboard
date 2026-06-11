@@ -4,35 +4,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/main.css" />
-    <title>Dashboard</title>
+    <title>Customers</title>
   </head>
   <body>
-    <script>
-
-    </script>
+    <script></script>
     <header>
       <nav>
         <div class="header-logo">
           <img src="/static/axist_footer_logo.png" />
         </div>
         <div class="home-link">
-          <p><a href="/dashboard/"> Home </a></p>
+          <p><a href="/dashboard/">Home</a></p>
         </div>
         <div class="nav-link">
-          <p><a href="/newcustomer/"> New Customer </a></p>
+          <p><a href="/newcustomer/">New Customer</a></p>
         </div>
       </nav>
     </header>
-    <table>
-      {% for customer in customers %}
-      <tr>
-        <td>QB ID: {{customer.qb_id}}</td>
-        <td>{{customer.name}}</td>
-        <td>{{customer.email}}</td>
-        <td>{{customer.phone}}</td>
-        <td><a href="{% url 'update_customer_get' customer.id %}">Update</a></td>
-      </tr>
-      {% endfor %}
-    </table>
+    <div class="table-wrap">
+      <div class="table-header">
+        <h2>Customers</h2>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>QB ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in customers %}
+            <tr>
+              <td>{{ customer.qb_id }}</td>
+              <td>{{ customer.name }}</td>
+              <td>{{ customer.email }}</td>
+              <td>{{ customer.phone }}</td>
+              <td><a href="{% url 'update_customer_get' customer.id %}" class="rental-link">Update</a></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align:center; color:#aaa; padding:2rem">No customers found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </body>
 </html>

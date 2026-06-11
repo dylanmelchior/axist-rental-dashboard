@@ -13,66 +13,95 @@
           <img src="/static/axist_footer_logo.png" />
         </div>
         <div class="home-link">
-          <p><a href="/dashboard/"> Home </a></p>
+          <p><a href="/dashboard/">Home</a></p>
         </div>
         <div class="nav-link">
-          <p><a href="/rentals/"> Rental Dashboard </a></p>
+          <p><a href="/estimates/">Estimates</a></p>
         </div>
       </nav>
     </header>
-    <h1>Estimate #{{ estimate.id }}</h1>
+    <div class="detail-wrap">
+      <h1 class="page-title">Estimate #{{ estimate.id }}</h1>
 
-    <section>
-      <h2>Details</h2>
-      <p><strong>Customer:</strong> {{ customer.name }}</p>
-      <p><strong>Phone:</strong> {{customer.phone}}</p>
-      <p><strong>Location:</strong> {{ estimate.location }}</p>
-      <p><strong>Delivery:</strong> {{ estimate.deliveryDate }}</p>
-      <p><strong>Event Start:</strong> {{ estimate.eventStartDate }}</p>
-      <p><strong>Event End:</strong> {{ estimate.eventEndDate }}</p>
-      <p><strong>Pickup:</strong> {{ estimate.pickupDate }}</p>
-      <p><strong>Total Price:</strong> ${{ estimate.totalPrice }}</p>
-    </section>
+      <div class="detail-card">
+        <div class="detail-card-header"><h2>Details</h2></div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Customer</div>
+            <div class="detail-value">{{ customer.name }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Phone</div>
+            <div class="detail-value">{{ customer.phone }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Location</div>
+            <div class="detail-value">{{ estimate.location }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Price</div>
+            <div class="detail-value">${{ estimate.totalPrice }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Delivery</div>
+            <div class="detail-value">{{ estimate.deliveryDate }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Pickup</div>
+            <div class="detail-value">{{ estimate.pickupDate }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Event Start</div>
+            <div class="detail-value">{{ estimate.eventStartDate }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Event End</div>
+            <div class="detail-value">{{ estimate.eventEndDate }}</div>
+          </div>
+        </div>
+      </div>
 
-    <section>
-      <h2>Items</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Description</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in estimate_items %}
-          <tr>
-            <td>{{ item.item.name }}</td>
-            <td>{{ item.item.itemDescription }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>${{ item.item.itemPrice }}</td>
-            <td>${{ item.quantity|floatformat:2 }}</td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="5">No items on this rental.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="4"><strong>Total</strong></td>
-            <td><strong>${{ estimate.totalPrice }}</strong></td>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
-    <form method="POST" action="/send-out-for-delivery/">
-    {% csrf_token %}
-    <input type="hidden" name="customer_id" value="{{ customer.id }}">
-    <button type="submit">Send SMS</button>
-    </form>
+      <div class="detail-card">
+        <div class="detail-card-header"><h2>Items</h2></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Description</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in estimate_items %}
+            <tr>
+              <td>{{ item.item.name }}</td>
+              <td>{{ item.item.itemDescription }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ item.item.itemPrice }}</td>
+              <td>${{ item.quantity|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align:center; color:#aaa; padding:1.5rem">No items on this estimate.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4"><strong>Total</strong></td>
+              <td><strong>${{ estimate.totalPrice }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <form method="POST" action="/send-out-for-delivery/">
+        {% csrf_token %}
+        <input type="hidden" name="customer_id" value="{{ customer.id }}">
+        <button type="submit">Send SMS</button>
+      </form>
+    </div>
   </body>
 </html>

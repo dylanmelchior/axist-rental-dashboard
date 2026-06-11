@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/main.css" />
-    <title>Dashboard</title>
+    <title>Rentals</title>
   </head>
   <body>
     <header>
@@ -13,144 +13,68 @@
           <img src="/static/axist_footer_logo.png" />
         </div>
         <div class="home-link">
-          <p><a href="/dashboard/"> Home </a></p>
+          <p><a href="/dashboard/">Home</a></p>
         </div>
         <div class="nav-link">
-          <p><a href="/newrental/"> New Rental </a></p>
+          <p><a href="/newrental/">New Rental</a></p>
         </div>
       </nav>
     </header>
-    <style>
-      .table-wrap {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-      }
-      .table-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-      }
-      .table-header h2 {
-        font-size: 1.4rem;
-        font-weight: 600;
-        margin: 0;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-      }
-      thead th {
-        text-align: left;
-        padding: 10px 12px;
-        border-bottom: 2px solid #e5e5e5;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #888;
-        font-weight: 600;
-      }
-      tbody td {
-        padding: 10px 12px;
-        border-bottom: 1px solid #f0f0f0;
-        vertical-align: top;
-      }
-      tbody tr:hover {
-        background: #f9f9f9;
-      }
-      .items-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-      .items-list li {
-        white-space: nowrap;
-      }
-      .badge {
-        display: inline-block;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 4px;
-      }
-      .badge-paid {
-        background: #d1fae5;
-        color: #065f46;
-      }
-      .badge-unpaid {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-      .rental-link {
-        text-decoration: none;
-        color: inherit;
-        font-weight: 500;
-      }
-      .rental-link:hover {
-        text-decoration: underline;
-      }
-    </style>
 
     <div class="table-wrap">
       <div class="table-header">
         <h2>Rentals</h2>
       </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Location</th>
-            <th>Load in</th>
-            <th>Load out</th>
-            <th>Items</th>
-            <th>Paid</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for rental in rentals %}
-          <tr>
-            <td>
-              <a href="{% url 'rental_card' rental.id %}" class="rental-link">
-                {{ rental.eventDateStart|date:"M j, Y" }}
-              </a>
-            </td>
-            <td>{{ rental.customer }}</td>
-            <td>{{ rental.location }}</td>
-            <td>{{ rental.deliveryDate|date:"M j, Y g:i A" }}</td>
-            <td>{{ rental.pickupDate|date:"M j, Y g:i A" }}</td>
-            <td>
-              <ul class="items-list">
-                {% for item in rental.rentalitem_set.all %}
-                <li>{{ item.quantity }}x {{ item.item.name }}</li>
-                {% empty %}
-                <li style="color: #aaa">—</li>
-                {% endfor %}
-              </ul>
-            </td>
-            <td>
-              {% if rental.is_paid %}
-              <span class="badge badge-paid">Paid</span>
-              {% else %}
-              <span class="badge badge-unpaid">Unpaid</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td
-              colspan="7"
-              style="text-align: center; color: #aaa; padding: 2rem"
-            >
-              No rentals found.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Location</th>
+              <th>Load In</th>
+              <th>Load Out</th>
+              <th>Items</th>
+              <th>Paid</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rental in rentals %}
+            <tr>
+              <td>
+                <a href="{% url 'rental_card' rental.id %}" class="rental-link">
+                  {{ rental.eventDateStart|date:"M j, Y" }}
+                </a>
+              </td>
+              <td>{{ rental.customer }}</td>
+              <td>{{ rental.location }}</td>
+              <td>{{ rental.deliveryDate|date:"M j, Y g:i A" }}</td>
+              <td>{{ rental.pickupDate|date:"M j, Y g:i A" }}</td>
+              <td>
+                <ul class="items-list">
+                  {% for item in rental.rentalitem_set.all %}
+                  <li>{{ item.quantity }}x {{ item.item.name }}</li>
+                  {% empty %}
+                  <li style="color:#aaa">—</li>
+                  {% endfor %}
+                </ul>
+              </td>
+              <td>
+                {% if rental.is_paid %}
+                <span class="badge badge-paid">Paid</span>
+                {% else %}
+                <span class="badge badge-unpaid">Unpaid</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" style="text-align:center; color:#aaa; padding:2rem">No rentals found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </body>
 </html>

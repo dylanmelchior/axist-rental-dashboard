@@ -1,75 +1,76 @@
 <!doctype html>
-<html>
-    <head>
+<html lang="en">
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/main.css" />
     <title>New Rental</title>
-    </head>
-<body>
-<form method="post" action="/createrental/" id="create-new-rental-form">
-      {% csrf_token %}
-      <p>
-        <label for="new-rental-qbID">Customer Quickbooks ID: </label>
-        <input type="number" id="new-rental-qbID" name="qbID" required />
-      </p>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="header-logo">
+          <img src="/static/axist_footer_logo.png" />
+        </div>
+        <div class="home-link">
+          <p><a href="/dashboard/">Home</a></p>
+        </div>
+        <div class="nav-link">
+          <p><a href="/rentals/">Rentals</a></p>
+        </div>
+      </nav>
+    </header>
+    <div class="form-wrap form-wrap-wide">
+      <div class="form-card">
+        <h2>New Rental</h2>
+        <form method="post" action="/createrental/" id="create-new-rental-form">
+          {% csrf_token %}
+          <div class="form-row">
+            <label for="new-rental-qbID">Customer Quickbooks ID</label>
+            <input type="number" id="new-rental-qbID" name="qbID" required />
+          </div>
+          <div class="form-row">
+            <label for="new-rental-location">Address</label>
+            <input type="text" id="new-rental-location" name="location" required />
+          </div>
+          <div class="form-row">
+            <label for="new-rental-deliveryDate">Delivery Date / Time</label>
+            <input type="datetime-local" id="new-rental-deliveryDate" name="deliveryDate" />
+          </div>
+          <div class="form-row">
+            <label for="new-rental-eventDateStart">Event Start</label>
+            <input type="datetime-local" id="new-rental-eventDateStart" name="eventStart" />
+          </div>
+          <div class="form-row">
+            <label for="new-rental-eventDateEnd">Event End</label>
+            <input type="datetime-local" id="new-rental-eventDateEnd" name="eventEnd" />
+          </div>
+          <div class="form-row">
+            <label for="new-rental-pickupDate">Pickup Date / Time</label>
+            <input type="datetime-local" id="new-rental-pickupDate" name="pickupDate" />
+          </div>
 
-      <p>
-        <label for="new-rental-location">Address: </label>
-        <input type="text" id="new-rental-location" name="location" required />
-      </p>
+          <table class="item-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody class="item-table-body"></tbody>
+          </table>
+          <button type="button" id="add-item-row">+ Add Item</button>
 
-      <p>
-        <label for="new-rental-deliveryDate">Delivery Date/Time: </label>
-        <input
-          type="datetime-local"
-          id="new-rental-deliveryDate"
-          name="deliveryDate"
-        />
-      </p>
-
-      <p>
-        <label for="new-rental-eventDateStart">Event Start: </label>
-        <input
-          type="datetime-local"
-          id="new-rental-eventDateStart"
-          name="eventStart"
-        />
-      </p>
-
-      <p>
-        <label for="new-rental-eventDateEnd">Event End: </label>
-        <input
-          type="datetime-local"
-          id="new-rental-eventDateEnd"
-          name="eventEnd"
-        />
-      </p>
-
-      <p>
-        <label for="new-rental-pickupDate">Pickup Date/Time: </label>
-        <input
-          type="datetime-local"
-          id="new-rental-pickupDate"
-          name="pickupDate"
-        />
-      </p>
-
-      <table class="item-table">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Description</th>
-            <th>Quantity</th>
-            <th>Price</th>
-          </tr>
-        </thead>
-        <tbody class="item-table-body"></tbody>
-      </table>
-      <button type="button" id="add-item-row">Add Item</button>
-
-      <p><input type="submit" /></p>
-    </form>
+          <div class="btn-actions">
+            <input type="submit" value="Create Rental" />
+          </div>
+        </form>
+      </div>
+    </div>
 
     <script>
     let rowCount = 0;
@@ -81,7 +82,6 @@
     function createItemRow() {
         const tBody = document.querySelector(".item-table-body");
         const i = rowCount++;
-
         const row = document.createElement("tr");
         row.id = `row-${i}`;
         row.innerHTML = `
@@ -96,12 +96,12 @@
 
     function populateRow(i, itemId) {
         if (!itemId) return;
-            fetch(`/item/${itemId}/`)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById(`desc-${i}`).value  = data.description;
-                    document.getElementById(`price-${i}`).value = data.price;
-                    calcTotal(i);
+        fetch(`/item/${itemId}/`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById(`desc-${i}`).value  = data.description;
+                document.getElementById(`price-${i}`).value = data.price;
+                calcTotal(i);
         });
     }
 
@@ -117,5 +117,5 @@
 
     document.querySelector("#add-item-row").addEventListener("click", createItemRow);
     </script>
-</body>
+  </body>
 </html>

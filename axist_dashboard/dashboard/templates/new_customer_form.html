@@ -1,43 +1,47 @@
 <!doctype html>
-<html>
-    <head>
+<html lang="en">
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/main.css" />
     <title>New Customer</title>
-    </head>
-<body>
-<form method="post" action="/createcustomer/" id="create-new-customer-form">
-      {% csrf_token %}
-      <p>
-        <label for="new-customer-name">Name: </label>
-        <input
-          type="text"
-          id="new-customer-name"
-          name="name"
-          placeholder="Customer Name"
-          required
-        />
-      </p>
-
-      <p>
-        <label for="new-customer-email">Email: </label>
-        <input
-          type="email"
-          id="new-customer-email"
-          name="email"
-          placeholder="Customer Email"
-          required
-        />
-      </p>
-
-      <p>
-        <label for="new-customer-phone">Phone: </label>
-        <input type="tel" id="new-customer-phone" name="phone" 
-        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder = "123-456-7890"/>
-      </p>
-
-      <p><input type="submit" /></p>
-    </form>
-</body>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="header-logo">
+          <img src="/static/axist_footer_logo.png" />
+        </div>
+        <div class="home-link">
+          <p><a href="/dashboard/">Home</a></p>
+        </div>
+        <div class="nav-link">
+          <p><a href="/customers/">Customers</a></p>
+        </div>
+      </nav>
+    </header>
+    <div class="form-wrap">
+      <div class="form-card">
+        <h2>New Customer</h2>
+        <form method="post" action="/createcustomer/" id="create-new-customer-form">
+          {% csrf_token %}
+          <div class="form-row">
+            <label for="new-customer-name">Name</label>
+            <input type="text" id="new-customer-name" name="name" placeholder="Customer Name" required />
+          </div>
+          <div class="form-row">
+            <label for="new-customer-email">Email</label>
+            <input type="email" id="new-customer-email" name="email" placeholder="Customer Email" required />
+          </div>
+          <div class="form-row">
+            <label for="new-customer-phone">Phone</label>
+            <input type="tel" id="new-customer-phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" />
+          </div>
+          <div class="btn-actions">
+            <input type="submit" value="Create Customer" />
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
 </html>
