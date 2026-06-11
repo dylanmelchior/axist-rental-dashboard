@@ -279,6 +279,7 @@ input[type="submit"] {
   font-family: var(--font);
   cursor: pointer;
   transition: background 0.15s;
+  margin-bottom: 10px;
 }
 
 button[type="submit"]:hover,
