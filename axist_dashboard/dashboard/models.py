@@ -34,6 +34,7 @@ class Item(models.Model):
     itemDepth = models.DecimalField(max_digits = 6, decimal_places = 2)
     itemDescription = models.CharField(max_length = 200, null = True)
     qb_id = models.IntegerField(default = 1, null = False)
+    taxable = models.BooleanField(default = True)
 
 class RentalItem(models.Model):
     rental = models.ForeignKey(Rental, on_delete = models.CASCADE)
@@ -43,6 +44,7 @@ class RentalItem(models.Model):
 
 class Estimate(models.Model):
     qb_id = models.BigIntegerField()
+    invoice_qb_id = models.BigIntegerField(null = True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     location = models.CharField(max_length = 200)
     totalPrice = models.DecimalField(max_digits = 20, decimal_places = 2, default=0)
@@ -57,10 +59,6 @@ class EstimateItem(models.Model):
     item = models.ForeignKey(Item, on_delete = models.CASCADE)
     quantity = models.IntegerField()
     notes = models.CharField(max_length = 500, null = True)
-
-class Invoice(models.Model):
-    qbID = models.BigIntegerField()
-    rental = models.ForeignKey(Rental, on_delete = models.CASCADE)
 
 
 

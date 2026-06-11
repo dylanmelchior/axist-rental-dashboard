@@ -23,6 +23,7 @@ urlpatterns = [
     path("estimates/<int:id>", views.estimate_card, name="estimate_card"),
     path("estimates/new/", views.new_estimate_get, name="new_estimate_get"),
     path("estimates/new-post", views.new_estimate_post, name="new_estimate_post"),
+    path("estimates/<int:estimate_id>/convert-to-invoice", views.convert_estimate_to_invoice, name="convert_estimate_to_invoice"),
     path("send-out-for-delivery/", views.send_out_for_delivery_view, name="send_out_for_delivery"),
     path("sms-consent/", views.sms_consent_view, name = "sms_consent"),
 ]

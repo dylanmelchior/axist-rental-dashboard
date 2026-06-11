@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import requires_csrf_token
 from django.shortcuts import get_object_or_404, redirect, render
-from .models import Customer, OutreachLog, Rental, RentalItem, Item, Estimate, EstimateItem, Invoice
+from .models import Customer, OutreachLog, Rental, RentalItem, Item, Estimate, EstimateItem
 
 # Quickbooks imports
 from intuitlib.client import AuthClient
@@ -16,6 +16,7 @@ from quickbooks.objects.base import EmailAddress, PhoneNumber
 from quickbooks.objects.estimate import Estimate as QBEstimate
 from quickbooks.objects.detailline import SalesItemLine, SalesItemLineDetail
 from quickbooks.objects.item import Item as QBItem
+from quickbooks.objects.invoice import Invoice
 
 # Utility imports
 import os
@@ -379,7 +380,8 @@ def new_estimate_post(request, qb_client = None):
             eventDateStart = eventStart,
             eventDateEnd = eventEnd,
             pickupDate = pickupDate,
-            totalPrice = 0
+            totalPrice = 0,
+            qb_id = -1,
         )
 
         # Create all rental items
@@ -403,6 +405,7 @@ def new_estimate_post(request, qb_client = None):
     
         # Attach Customer
         qb_estimate.CustomerRef = QBCustomer.get(estimate.customer.qb_id, qb=qb_client).to_ref()
+        qb_estimate.BillEmail = customer.email
 
         # Build Line Items
         lines = []
@@ -415,6 +418,7 @@ def new_estimate_post(request, qb_client = None):
             detail.ItemRef = QBItem.get(item.qb_id, qb=qb_client).to_ref()
             detail.Qty = estimateItem.quantity
             detail.UnitPrice = item.itemPrice
+            detail.TaxCodeRef = {"value": "TAX" if item.taxable else "NON"}
         
             line.SalesItemLineDetail = detail
             lines.append(line)
@@ -427,6 +431,42 @@ def new_estimate_post(request, qb_client = None):
         estimate.totalPrice = totalPrice
         estimate.save()
 
+    return redirect("estimates_view")
+
+@requires_csrf_token
+@qb_required
+@login_required
+def convert_estimate_to_invoice(request, estimate_id, qb_client = None,):
+    estimate = Estimate.objects.get(pk=estimate_id)
+    customer = estimate.customer
+    
+    invoice = Invoice()
+    invoice.CustomerRef = QBCustomer.get(estimate.customer.qb_id, qb=qb_client).to_ref()
+    invoice.BillEmail = customer.email
+    invoice.LinkedTxn = [{"TxnId": estimate.qb_id, "TxnType": "Estimate"}]
+
+    lines = []
+    for estimate_item in estimate.estimateitem_set.all():
+        line = SalesItemLine()
+        item = estimate_item.item
+        line.Amount = Decimal(estimate_item.quantity * item.itemPrice)
+
+        detail = SalesItemLineDetail()
+        detail.ItemRef = QBItem.get(estimate_item.item.qb_id, qb=qb_client).to_ref()
+        detail.Qty = estimate_item.quantity
+        detail.UnitPrice = item.itemPrice
+        detail.TaxCodeRef = {"value": "TAX" if item.taxable else "NON"}
+
+        line.SalesItemLineDetail = detail
+        lines.append(line)
+
+    invoice.Line = lines
+    invoice.save(qb=qb_client)
+
+    estimate.invoice_qb_id = invoice.Id
+    estimate.save()
+
+    return redirect("estimates_view")
 
 @login_required
 def send_out_for_delivery_view(request):
