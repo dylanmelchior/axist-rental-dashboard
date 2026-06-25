@@ -500,3 +500,9 @@ def sms_consent_view(request):
             customer.save()
         return redirect('/consent-confirmed/')
     return render(request, 'sms_consent.html')
+
+def privacy_policy(request):
+    return render(request, "privacy.html")
+
+def eula(request):
+    return render(request, "eula.html")

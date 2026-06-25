@@ -27,4 +27,6 @@ urlpatterns = [
     path("estimates/<int:estimate_id>/send", views.send_estimate_to_customer, name="send_estimate_to_customer"),
     path("send-out-for-delivery/", views.send_out_for_delivery_view, name="send_out_for_delivery"),
     path("sms-consent/", views.sms_consent_view, name = "sms_consent"),
+    path("privacy/", views.privacy_policy, name = "privacy_policy"),
+    path("eula/", views.eula, name = "eula"),
 ]
