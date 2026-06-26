@@ -20,7 +20,7 @@ from quickbooks.objects.invoice import Invoice
 from quickbooks.objects.taxcode import TaxCode
 
 # Utility imports
-import os
+import os 
 import calendar
 from decimal import Decimal
 from .scripts.sync import sync_customers_from_qb
@@ -48,7 +48,7 @@ def quickbooks_login(request):
     request.session["state"] = auth_client.state_token
     return redirect(auth_url)
 
-@login_required
+
 def callback(request):
     auth_client = get_auth_client(request)
 
